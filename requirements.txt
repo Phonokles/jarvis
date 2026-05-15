@@ -1,0 +1,24 @@
+# JARVIS Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core
+aiohttp>=3.9.0
+numpy>=1.24.0
+
+# Speech Recognition
+openai-whisper>=20231117
+pyaudio>=0.2.13
+
+# Wake Word (free, offline)
+pvporcupine>=3.0.0
+
+# Text to Speech
+pyttsx3>=2.90
+# Optional: better quality TTS (online, free)
+edge-tts>=6.1.9
+
+# PC Control
+requests>=2.31.0
+
+# Audio playback for edge-tts
+# Install system package: sudo apt install mpg123

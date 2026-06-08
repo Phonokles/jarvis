@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JARVIS</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:480px;height:680px;overflow:hidden;background:transparent;-webkit-app-region:drag;user-select:none}
+#app{
+  width:480px;height:680px;
+  background:radial-gradient(ellipse at 50% 25%,#0d0525 0%,#060218 45%,#020010 100%);
+  border:0.5px solid rgba(100,60,200,0.3);
+  border-radius:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  font-family:'Rajdhani',sans-serif;
+  box-shadow:0 0 80px rgba(60,20,160,0.4),0 0 200px rgba(40,10,120,0.2);
+}
+
+/* Window controls */
+.wctrl{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:10;-webkit-app-region:no-drag}
+.wbtn{width:12px;height:12px;border-radius:50%;border:none;cursor:pointer;transition:opacity 0.2s}
+.wbtn:hover{opacity:0.7}
+.wbtn-min{background:#f5a623}
+.wbtn-close{background:#4a2a8a}
+.wbtn-quit{background:#c0392b}
+
+/* Corner decos */
+.cdeco{position:absolute;width:32px;height:32px;opacity:0.25}
+.cdeco.tl{top:16px;left:16px;border-top:1px solid #9060ff;border-left:1px solid #9060ff}
+.cdeco.tr{top:16px;right:52px;border-top:1px solid #9060ff;border-right:1px solid #9060ff}
+.cdeco.bl{bottom:16px;left:16px;border-bottom:1px solid #9060ff;border-left:1px solid #9060ff}
+.cdeco.br{bottom:16px;right:16px;border-bottom:1px solid #9060ff;border-right:1px solid #9060ff}
+
+/* Stars */
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite var(--dl)}
+@keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(--op)}}
+
+/* Ambient */
+.ambient{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(70,15,170,0.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-58%);pointer-events:none}
+
+.title{font-family:'Orbitron',monospace;font-weight:900;font-size:11px;letter-spacing:0.55em;color:rgba(150,90,255,0.45);text-transform:uppercase;margin-bottom:32px;z-index:2}
+
+/* Orb */
+.orb-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;z-index:2}
+.ring{position:absolute;border-radius:50%;border:1px solid;animation:spin linear infinite}
+.r1{width:200px;height:200px;border-color:rgba(70,50,190,0.3);animation-duration:12s}
+.r2{width:224px;height:224px;border-color:rgba(130,70,255,0.12);border-style:dashed;animation-duration:22s;animation-direction:reverse}
+.r3{width:250px;height:250px;border-color:rgba(255,190,40,0.06);animation-duration:34s}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.orb{
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#180840,#0c0525 60%,#050215);
+  border:1.5px solid rgba(90,50,210,0.6);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  transition:border-color 0.4s,box-shadow 0.4s;
+  box-shadow:0 0 30px rgba(70,25,190,0.35),0 0 80px rgba(70,25,190,0.1),inset 0 0 40px rgba(70,25,190,0.15);
+}
+.orb.listening{border-color:rgba(160,80,255,0.95);box-shadow:0 0 45px rgba(150,70,255,0.55),0 0 110px rgba(150,70,255,0.2),inset 0 0 50px rgba(150,70,255,0.2)}
+.orb.speaking{border-color:rgba(60,160,255,0.95);box-shadow:0 0 45px rgba(40,140,255,0.55),0 0 110px rgba(40,140,255,0.2),inset 0 0 50px rgba(40,140,255,0.2)}
+.orb.thinking{border-color:rgba(255,190,40,0.8);box-shadow:0 0 45px rgba(255,170,20,0.45),0 0 110px rgba(255,170,20,0.15),inset 0 0 50px rgba(255,170,20,0.15)}
+.orb.booting{border-color:rgba(60,220,120,0.7);box-shadow:0 0 45px rgba(40,200,100,0.4),0 0 110px rgba(40,200,100,0.12),inset 0 0 50px rgba(40,200,100,0.12)}
+.orb.error{border-color:rgba(255,60,60,0.7);box-shadow:0 0 45px rgba(255,40,40,0.4),0 0 110px rgba(255,40,40,0.1),inset 0 0 50px rgba(255,40,40,0.1)}
+
+.orb-glare{position:absolute;top:16px;left:20px;width:40px;height:22px;background:radial-gradient(ellipse,rgba(255,255,255,0.1),transparent);border-radius:50%;pointer-events:none}
+
+.orb-label{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:0.28em;color:rgba(170,130,255,0.8);text-transform:uppercase;transition:color 0.4s}
+.orb.listening .orb-label{color:rgba(200,140,255,0.95)}
+.orb.speaking .orb-label{color:rgba(100,190,255,0.95)}
+.orb.thinking .orb-label{color:rgba(255,205,80,0.95)}
+.orb.booting .orb-label{color:rgba(80,230,140,0.95)}
+.orb.error .orb-label{color:rgba(255,100,100,0.95)}
+
+/* Soundwaves */
+.waves{position:absolute;width:320px;height:80px;display:flex;align-items:center;justify-content:center;gap:2.5px;opacity:0;transition:opacity 0.5s;pointer-events:none}
+.waves.on{opacity:1}
+.wbar{width:2.5px;border-radius:3px;height:4px;background:linear-gradient(to top,rgba(40,100,255,0.3),rgba(90,170,255,0.9),rgba(160,215,255,0.4));transition:background 0.4s}
+.waves.on .wbar{animation:wpulse var(--spd) ease-in-out infinite var(--dl)}
+.waves.listening .wbar{background:linear-gradient(to top,rgba(110,30,255,0.3),rgba(175,90,255,0.9),rgba(220,155,255,0.4))}
+.waves.thinking .wbar{background:linear-gradient(to top,rgba(160,90,0,0.3),rgba(255,185,30,0.9),rgba(255,230,120,0.4));animation-duration:2s!important}
+@keyframes wpulse{0%,100%{height:4px;opacity:0.35}50%{height:var(--h);opacity:1}}
+
+/* Status */
+.status-wrap{margin-top:48px;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2}
+.status-emoji{font-size:24px;min-height:34px;display:flex;align-items:center;gap:10px}
+.status-text{font-size:12px;font-weight:300;letter-spacing:0.22em;color:rgba(150,120,220,0.55);text-transform:uppercase}
+.msg-box{
+  margin-top:6px;
+  background:rgba(255,255,255,0.025);
+  border:0.5px solid rgba(90,50,190,0.22);
+  border-radius:14px;padding:14px 28px;
+  max-width:360px;min-height:52px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:14px;font-weight:400;letter-spacing:0.04em;line-height:1.55;
+  color:rgba(215,195,255,0.7);transition:border-color 0.4s,color 0.4s;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="wctrl">
+    <button class="wbtn wbtn-min" title="Minimize" onclick="window.jarvis.minimize()"></button>
+    <button class="wbtn wbtn-close" title="Hide" onclick="window.jarvis.close()"></button>
+    <button class="wbtn wbtn-quit" title="Quit" onclick="window.jarvis.quit()"></button>
+  </div>
+  <div class="cdeco tl"></div><div class="cdeco tr"></div>
+  <div class="cdeco bl"></div><div class="cdeco br"></div>
+  <div class="ambient"></div>
+  <div id="stars"></div>
+
+  <div class="title">J · A · R · V · I · S</div>
+
+  <div class="orb-wrap">
+    <div class="ring r3"></div>
+    <div class="ring r2"></div>
+    <div class="ring r1"></div>
+    <div class="waves" id="waves"></div>
+    <div class="orb booting" id="orb">
+      <div class="orb-glare"></div>
+      <div class="orb-label" id="orbLbl">BOOT</div>
+    </div>
+  </div>
+
+  <div class="status-wrap">
+    <div class="status-emoji" id="sEmoji">⚡</div>
+    <div class="status-text" id="sTxt">initializing system</div>
+    <div class="msg-box" id="msgBox">Starting up JARVIS...</div>
+  </div>
+</div>
+
+<script>
+const STATES = {
+  sleep:     { lbl:'JARVIS', cls:'',         emoji:'💤',      txt:'sleeping · say "jarvis" to wake', msg:'Awaiting your command, sir.' },
+  listening: { lbl:'LISTEN', cls:'listening', emoji:'👂 🎙️',  txt:'listening · speak now',            msg:'I\'m all ears.' },
+  speaking:  { lbl:'SPEAK',  cls:'speaking',  emoji:'🔊 💬',  txt:'speaking · playing response',      msg:'Responding...' },
+  thinking:  { lbl:'THINK',  cls:'thinking',  emoji:'🧠 ⚙️',  txt:'thinking · processing request',   msg:'Processing your request...' },
+  searching: { lbl:'SEARCH', cls:'thinking',  emoji:'🔍 🌐',  txt:'searching · fetching web data',    msg:'Querying the internet...' },
+  running:   { lbl:'RUN',    cls:'speaking',  emoji:'⚙️ 🖥️', txt:'executing · running command',      msg:'Running system command...' },
+  booting:   { lbl:'BOOT',   cls:'booting',   emoji:'⚡',     txt:'initializing system',              msg:'Starting up JARVIS...' },
+  error:     { lbl:'ERROR',  cls:'error',     emoji:'⚠️',     txt:'error · something went wrong',     msg:'An error occurred. Check the terminal.' }
+}
+const orb=document.getElementById('orb')
+const orbLbl=document.getElementById('orbLbl')
+const waves=document.getElementById('waves')
+const sEmoji=document.getElementById('sEmoji')
+const sTxt=document.getElementById('sTxt')
+const msgBox=document.getElementById('msgBox')
+
+const NUM=52
+for(let i=0;i<NUM;i++){
+  const b=document.createElement('div')
+  b.className='wbar'
+  const mh=14+Math.sin(i/NUM*Math.PI)*46+Math.random()*14
+  b.style.cssText=`--h:${Math.round(mh)}px;--spd:${(0.35+Math.random()*0.7).toFixed(2)}s;--dl:-${(Math.random()*0.7).toFixed(2)}s`
+  waves.appendChild(b)
+}
+
+for(let i=0;i<55;i++){
+  const s=document.createElement('div')
+  s.className='star'
+  const sz=Math.random()<0.8?1:2
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(2+Math.random()*4).toFixed(1)}s;--dl:-${(Math.random()*4).toFixed(1)}s;--op:${(0.15+Math.random()*0.5).toFixed(2)}`
+  document.getElementById('stars').appendChild(s)
+}
+
+function setState(name, customMsg) {
+  const s = STATES[name] || STATES.sleep
+  orb.className = 'orb ' + s.cls
+  orbLbl.textContent = s.lbl
+  const waveOn = name !== 'sleep'
+  waves.className = 'waves' + (waveOn ? ' on' : '') + (s.cls ? ' ' + s.cls : '')
+  sEmoji.textContent = s.emoji
+  sTxt.textContent = s.txt
+  msgBox.textContent = customMsg || s.msg
+  const borderMap = { listening:'rgba(140,70,255,0.3)', speaking:'rgba(50,150,255,0.3)', thinking:'rgba(255,175,25,0.2)', booting:'rgba(40,200,100,0.2)', error:'rgba(255,50,50,0.2)' }
+  msgBox.style.borderColor = borderMap[s.cls] || 'rgba(90,50,190,0.22)'
+}
+
+window.jarvis.onState((data) => {
+  setState(data.state, data.msg)
+})
+
+setState('booting')
+</script>
+</body>
+</html>
